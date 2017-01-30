@@ -12,12 +12,13 @@ buildscript {
 
 apply plugin: 'java'
 apply plugin: 'idea'
+apply plugin: 'groovy'
 apply plugin: 'spring-boot'
 apply plugin: 'jacoco'
 
 jar {
-	baseName = 'ekanban-backend'
-	version = '0.0.1-SNAPSHOT'
+    baseName = 'ekanban-backend'
+    version = '0.0.1-SNAPSHOT'
 }
 
 sourceCompatibility = 1.8
@@ -45,9 +46,14 @@ project.ext {
     mockitoVersion = '1.+'
     cloningVersion = '1.9.2'
     guavaVersion = '20.0'
+    spectrumVersion = '1.0.0'
 }
 
+configurations { rspec }
+
 dependencies {
+    rspec group: 'org.jruby', name: 'jruby-complete', version: '9.1.7.0'
+
     compile 'org.springframework.boot:spring-boot-starter-data-mongodb'
     compile 'org.springframework.boot:spring-boot-devtools'
     compile 'org.springframework.boot:spring-boot-starter-web'
@@ -55,6 +61,7 @@ dependencies {
     compile 'ch.qos.logback:logback-classic:' + logbackVersion
     compile 'uk.com.robust-it:cloning:' + cloningVersion
     compile 'com.google.guava:guava:' + guavaVersion
+    compile fileTree(dir: 'libs', include: ['*.jar'])
 
     testCompile 'org.springframework.boot:spring-boot-starter-test'
     testCompile 'info.cukes:cucumber-java:' + cucumberVersion
@@ -66,6 +73,7 @@ dependencies {
     testCompile 'org.hamcrest:hamcrest-all:' + hamcrestVersion
     testCompile 'nl.jqno.equalsverifier:equalsverifier:' + equalsVersion
     testCompile 'org.mockito:mockito-core:' + mockitoVersion
+    testCompile 'com.greghaskins:spectrum:' + spectrumVersion
 }
 
 sourceSets {
@@ -111,12 +119,6 @@ tasks.withType(Test) {
     systemProperties System.getProperties()
 }
 
-check.dependsOn integrationTest
-integrationTest.mustRunAfter test
-
-check.dependsOn acceptanceTest
-acceptanceTest.mustRunAfter integrationTest
-
 jacocoTestReport {
     group = "Reporting"
     reports {
@@ -125,3 +127,49 @@ jacocoTestReport {
         html.destination "${buildDir}/reports/coverage"
     }
 }
+
+task(bundler, type: JavaExec) {
+    main = 'org.jruby.Main'
+    classpath = configurations.rspec
+    args = ['-S', 'gem', 'install', 'bundler']
+    environment['GEM_PATH'] = file('build/gems').path
+    environment['GEM_HOME'] = file('build/gems').path
+}
+
+task(gems, dependsOn: ["bundler"], type: JavaExec) {
+    main = 'org.jruby.Main'
+    classpath = configurations.rspec
+    args = ['-S', 'bundle', 'install']
+    environment['GEM_PATH'] = file('build/gems').path
+    environment['GEM_HOME'] = file('build/gems').path
+}
+
+task(spec, dependsOn: ["classes"], type: JavaExec) {
+    main = 'org.jruby.Main'
+    classpath = sourceSets.test.runtimeClasspath + configurations.rspec
+    args = ['-S', 'build/gems/bin/rspec', 'src/spec/unit']
+    if ( project.hasProperty("file") ) {
+        args.push(file)
+    }
+    environment['GEM_HOME'] = file('build/gems').path
+    environment['GEM_PATH'] = file('build/gems').path
+    environment['ENV'] = "test"
+}
+
+task(integrationSpec, dependsOn: ["classes"], type: JavaExec) {
+    main = 'org.jruby.Main'
+    classpath = sourceSets.test.runtimeClasspath + configurations.rspec
+    args = ['-S', 'build/gems/bin/rspec', 'src/spec/api']
+    if ( project.hasProperty("file") ) {
+        args.push(file)
+    }
+    environment['GEM_HOME'] = file('build/gems').path
+    environment['GEM_PATH'] = file('build/gems').path
+    environment['ENV'] = "integration-test"
+}
+
+check.dependsOn spec
+spec.mustRunAfter test
+
+check.dependsOn integrationSpec
+integrationSpec.mustRunAfter spec

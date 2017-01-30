@@ -17,17 +17,17 @@ public class GameService {
     private GameInitService gameInitService;
     private PlayerService playerService;
     private GameOptionService gameOptionService;
-
-    @Autowired
     private GameRepository gameRepository;
 
     @Autowired
     public GameService(GameInitService gameInitService,
                        PlayerService playerService,
-                       GameOptionService gameOptionService) {
+                       GameOptionService gameOptionService,
+                       GameRepository gameRepository) {
         this.gameInitService = gameInitService;
         this.playerService = playerService;
         this.gameOptionService = gameOptionService;
+        this.gameRepository = gameRepository;
     }
 
     @Transactional
@@ -35,6 +35,10 @@ public class GameService {
         Game newGame = gameInitService.getInitializedGame(gameDifficulty, playerName);
         Game createdGame = gameRepository.save(newGame);
         return createdGame;
+    }
+
+    public Game throwError() {
+        throw new RuntimeException("exception");
     }
 
     @Transactional
