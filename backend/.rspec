@@ -1,0 +1,5 @@
+--format html
+--out rspec_results.html
+
+--format RspecJunitFormatter
+--out rspec.xml

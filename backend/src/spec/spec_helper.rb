@@ -21,8 +21,6 @@ require 'mongo'
 # See http://rubydoc.info/gems/rspec-core/RSpec/Core/Configuration
 RSpec.configure do |config|
   if ENV['ENV'] == 'integration-test'
-    config.include SpringContext
-
     client = Mongo::Client.new([ '127.0.0.1:27017' ],
                                :database => 'ekanban-test',
                                :user => 'ekanban', :password => 'nabnake')
@@ -31,9 +29,14 @@ RSpec.configure do |config|
       client.database.collections.select { |c| c.name !~ /^system\./ }.each { |c| client[c.name].drop }
     end
 
+    config.after(:suite) do
+      SpringContext.instance.spring_ctx.close
+    end
+
     config.after(:each) do
       client.database.collections.select { |c| c.name !~ /^system\./ }.each { |c| client[c.name].drop }
     end
+    
   end
 
   # rspec-expectations config goes here. You can use an alternate

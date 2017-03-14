@@ -27,9 +27,12 @@ public class NormalTurnPlayerService implements TurnPlayer {
     @Autowired
     private DrawFromBacklogAIService drawFromBacklogAIService;
 
+    @Autowired
+    private ActionExecutorService actionExecutorService;
+
 
     public Game playTurn(Game game, Turn turn) {
-        game = ActionExecutorService.adjustWipLimits(game, turn.getAdjustWipLimitsAction());
+        game = actionExecutorService.adjustWipLimits(game, turn.getAdjustWipLimitsAction());
         game = assignResourcesWithAI(game);
         game = moveCardsWithAI(game);
         game = drawFromBacklogWithAI(game);
@@ -38,16 +41,16 @@ public class NormalTurnPlayerService implements TurnPlayer {
 
     private Game assignResourcesWithAI(Game game) {
         List<AssignResourcesAction> assignResourcesActions = assignResourcesAIService.getAssignResourcesActions(game);
-        return ActionExecutorService.assignResources(game, assignResourcesActions);
+        return actionExecutorService.assignResources(game, assignResourcesActions);
     }
 
     private Game moveCardsWithAI(Game game) {
         List<MoveCardAction> moveCardActions = moveCardsAIService.getMoveCardsActions(game);
-        return ActionExecutorService.moveCards(game, moveCardActions);
+        return actionExecutorService.moveCards(game, moveCardActions);
     }
 
     private Game drawFromBacklogWithAI(Game game) {
         List<DrawFromBacklogAction> drawFromBacklogActions = drawFromBacklogAIService.getDrawFromBacklogActions(game);
-        return ActionExecutorService.drawFromBacklog(game, drawFromBacklogActions);
+        return actionExecutorService.drawFromBacklog(game, drawFromBacklogActions);
     }
 }
