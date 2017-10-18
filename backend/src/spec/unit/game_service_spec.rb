@@ -20,43 +20,37 @@ describe GameService do
     @playerService = Mockito.mock(PlayerService.java_class)
     @gameOptionService = Mockito.mock(GameOptionService.java_class)
     @gameRepository = Mockito.mock(GameRepository.java_class)
-    @game_service = GameService.new(@gameInitService, @playerService, @gameOptionService, @gameRepository)
+    @game_service = GameService.new(@gameInitService, @playerService,
+                                    @gameOptionService, @gameRepository)
   end
 
   describe 'startGame()' do
-
-    let(:blankGame) {GameBuilder.aGame().build()}
+    let(:player_name) {"Player"}
+    let(:game_difficulty) {GameDifficulty::NORMAL}
+    let(:new_game) {GameBuilder.aGame().
+                        with_player_name(player_name).
+                        with_difficulty_level(game_difficulty).
+                        build()}
 
     context 'with normal difficulty' do
 
       before(:each) do
         Mockito.when(@gameInitService.getInitializedGame(
-            Mockito.any(GameDifficulty.java_class), Mockito.anyString)).thenReturn(blankGame)
-        Mockito.when(@gameRepository.save(blankGame)).thenReturn(blankGame)
+            Mockito.any(GameDifficulty.java_class), Mockito.anyString)).thenReturn(new_game)
+        Mockito.when(@gameRepository.save(new_game)).thenReturn(new_game)
       end
 
-      subject { @game_service.start_game("name", GameDifficulty::NORMAL) }
+      subject(:created_game) { @game_service.start_game(player_name, game_difficulty) }
 
-      it 'should return new game' do
-        expect(subject).to eq blankGame
+      it 'should create game with the given name' do
+        expect(created_game.player_name).to eq player_name
+      end
+
+      it 'should create game with the given game difficulty' do
+        expect(created_game.difficulty_level).to eq game_difficulty
       end
       
     end
-    
-  end
-
-  describe 'exception checking' do
-
-    context 'with throwError()' do
-
-      subject { @game_service.throw_error }
-
-      it 'works like a charm' do
-        expect { subject }.to raise_error(Java::JavaLang::RuntimeException, 'exception')
-      end
-
-    end
-
   end
 
 end

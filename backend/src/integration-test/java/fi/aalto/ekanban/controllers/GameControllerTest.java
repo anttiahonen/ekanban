@@ -28,6 +28,7 @@ import fi.aalto.ekanban.models.db.games.Game;
 import fi.aalto.ekanban.enums.GameDifficulty;
 import fi.aalto.ekanban.repositories.GameRepository;
 
+
 @RunWith(HierarchicalContextRunner.class)
 public class GameControllerTest extends SpringIntegrationTest {
 

@@ -25,5 +25,4 @@ class SpringContext
   def spring_port
     @ctx.getEmbeddedServletContainer.getPort
   end
-
 end
