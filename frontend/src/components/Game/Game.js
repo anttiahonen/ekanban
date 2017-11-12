@@ -9,7 +9,7 @@ import Message from '../Message/Message';
 import constants from '../../constants';
 import './Game.scss';
 
-class Game extends React.Component {
+export class Game extends React.Component {
   static propTypes = {
     game: PropTypes.shape({
       playerName: PropTypes.string.isRequired,
@@ -149,3 +149,4 @@ export default connect(
   mapStateToProps,
   mapDispatchToProps
 )(Game);
+

@@ -5,5 +5,6 @@ global.mount = mount;
 
 // Fail tests on any warning
 console.error = message => {
-  throw new Error(message);
+  if (message.indexOf("Shallow rendered") !== -1)
+    throw new Error(message);
 };
