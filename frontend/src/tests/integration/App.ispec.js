@@ -1,4 +1,4 @@
-import renderAppWithState from "./renderAppWithState";
+import renderAppWithState from "./RenderAppWithState";
 import { normalize } from 'normalizr';
 import Game from '../../components/Game/Game';
 import game from "../resources/initialData";
